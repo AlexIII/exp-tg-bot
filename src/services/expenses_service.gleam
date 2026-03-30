@@ -40,7 +40,28 @@ pub type ExpensesReport {
   )
 }
 
-pub fn process_user_message(
+pub type ExpensesService {
+  ExpensesService(
+    ctx: Context,
+    process_user_message: fn(Int, String) -> Result(Nil, AppError),
+    get_report_for_user: fn(Int, ReportGrouping, ReportPeriod) ->
+      Result(ExpensesReport, AppError),
+  )
+}
+
+pub fn new(ctx: Context) -> ExpensesService {
+  ExpensesService(
+    ctx:,
+    process_user_message: fn(user_tg_id, message) {
+      process_user_message(ctx, user_tg_id, message)
+    },
+    get_report_for_user: fn(user_tg_id, by, period) {
+      get_report_for_user(ctx, user_tg_id, by, period)
+    },
+  )
+}
+
+fn process_user_message(
   ctx: Context,
   user_tg_id: Int,
   message: String,
@@ -70,7 +91,7 @@ pub fn process_user_message(
   })
 }
 
-pub fn get_report_for_user(
+fn get_report_for_user(
   ctx: Context,
   user_tg_id: Int,
   by: ReportGrouping,
