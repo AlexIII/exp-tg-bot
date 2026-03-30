@@ -7,7 +7,6 @@ import gleam/result
 import gleam/string
 import services/action_service.{type ActionService}
 import services/currency_service.{type CurrencyService}
-import utils/parrot
 
 pub type Context {
   Context(
@@ -116,14 +115,6 @@ pub fn get_report_for_user(
     }
   }
 
-  echo "Getting report "
-    <> "From: "
-    <> birl.to_iso8601(from)
-    <> " To: "
-    <> birl.to_iso8601(to)
-    <> " By: "
-    <> string.inspect(by)
-
   let get_expenses = case by {
     ByCategory -> ctx.expenses_repo.get_expenses_for_user_by_category
     BySource -> ctx.expenses_repo.get_expenses_for_user_by_source
@@ -143,8 +134,8 @@ pub fn report_to_text(report: ExpensesReport) -> String {
   }
 
   let period = case report.period {
-    ThisMonth -> "this_month"
-    LastMonth -> "last_month"
+    ThisMonth -> "this month"
+    LastMonth -> "last month"
   }
 
   let rows = case report.expenses {
@@ -169,10 +160,10 @@ pub fn report_to_text(report: ExpensesReport) -> String {
   <> period
   <> "\n"
   <> "From: "
-  <> parrot.to_sqlite_datetime(report.from)
+  <> { birl.to_date_string(report.from) |> string.slice(0, 10) }
   <> "\n"
   <> "To: "
-  <> parrot.to_sqlite_datetime(report.to)
+  <> { birl.to_date_string(report.to) |> string.slice(0, 10) }
   <> "\n"
   <> "Total USD: "
   <> float.to_string(float.to_precision(report.total_usd, 2))
