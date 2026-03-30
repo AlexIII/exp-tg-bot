@@ -1,7 +1,8 @@
 *.beam
 *.ez
 *.db
-/build
+build/
 erl_crash.dump
 notes.md
 .env
+.git/

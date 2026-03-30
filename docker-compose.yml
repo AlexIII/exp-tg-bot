@@ -1,0 +1,14 @@
+services:
+  exp-tg-bot:
+    build: .
+    image: exp-tg-bot
+    container_name: exp-tg-bot-container
+    restart: unless-stopped
+    environment:
+      EXPBOT_BOT_TOKEN: ${EXPBOT_BOT_TOKEN}
+      EXPBOT_DB_FILE_PATH: /data/expenses.db
+    volumes:
+      - exp-tg-bot-data:/data
+
+volumes:
+  exp-tg-bot-data:

@@ -1,0 +1,18 @@
+{
+  "name": "gleam",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "developer",
+  "privileged": true,
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Gleam.gleam",
+        "streetsidesoftware.code-spell-checker",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

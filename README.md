@@ -1,24 +1,70 @@
 # expenses_tg_bot
 
-[![Package Version](https://img.shields.io/hexpm/v/expenses_tg_bot)](https://hex.pm/packages/expenses_tg_bot)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/expenses_tg_bot/)
+A Telegram bot for personal expense tracking, written in [Gleam](https://gleam.run) and running on the BEAM (Erlang OTP).
+
+## Features
+
+- **Log expenses** by sending a message: `[category] amount CURRENCY [source]`
+  - e.g. `food 12.50 USD credit card` or just `50 EUR`
+  - Amounts are automatically converted to USD via the [Frankfurter](https://api.frankfurter.dev) API
+- **Monthly reports** - `/report` for the current month, `/report last` for the previous month
+  - Grouped by category and source with USD totals
+- **Multi-user** - expenses are scoped per Telegram user ID
+
+## Requirements
+
+- [Gleam](https://gleam.run) v1.15.2+
+- Erlang/OTP 27+
+- SQLite 3
+
+## Configuration
+
+Create a `.env` file (or set environment variables):
+
+```env
+EXPBOT_BOT_TOKEN=your_telegram_bot_token
+EXPBOT_DB_FILE_PATH=/path/to/expenses.db
+```
+
+See `.example.env` for all available configuration options.
+
+## Setup
+
+**Initialize the database:**
 
 ```sh
-gleam add expenses_tg_bot@1
-```
-```gleam
-import expenses_tg_bot
-
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
-}
+sqlite3 expenses.db < schema.sql
 ```
 
-Further documentation can be found at <https://hexdocs.pm/expenses_tg_bot>.
+**Run locally:**
+
+```sh
+gleam run
+```
+
+## Docker
+
+```sh
+EXPBOT_BOT_TOKEN=your_token docker compose up -d
+```
+
+The database is persisted in the `exp-tg-bot-data` Docker volume.
 
 ## Development
 
+**Re-generate SQL query code**:
+
 ```sh
-gleam run   # Run the project
-gleam test  # Run the tests
+gleam run -m parrot -- --sqlite expenses.db
 ```
+
+**Build an Erlang shipment:**
+
+```sh
+gleam export erlang-shipment
+```
+
+## License
+
+MIT
+
