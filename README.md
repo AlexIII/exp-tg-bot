@@ -1,6 +1,9 @@
-# expenses_tg_bot
+# Expenses Tracker Telegram Bot
+<img align="right" src="./expenses_bot_logo.png" width="200" />
 
 A Telegram bot for personal expense tracking, written in [Gleam](https://gleam.run) and running on the BEAM (Erlang OTP).
+
+Try it here: [@a_track_expenses_bot](https://t.me/a_track_expenses_bot)
 
 ## Features
 
@@ -13,7 +16,7 @@ A Telegram bot for personal expense tracking, written in [Gleam](https://gleam.r
 
 ## Requirements
 
-- [Gleam](https://gleam.run) v1.15.2+
+- Gleam v1.15.2+
 - Erlang/OTP 27+
 - SQLite 3
 

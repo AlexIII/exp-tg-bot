@@ -1,8 +1,8 @@
 services:
   exp-tg-bot:
     build: .
-    image: exp-tg-bot
-    container_name: exp-tg-bot-container
+    image: alex3iii/exp-tg-bot:latest
+    container_name: exp-tg-bot-inst
     restart: unless-stopped
     environment:
       EXPBOT_BOT_TOKEN: ${EXPBOT_BOT_TOKEN}
