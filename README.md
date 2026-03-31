@@ -45,13 +45,15 @@ sqlite3 expenses.db < schema.sql
 gleam run
 ```
 
-## Docker
+## Docker (self-host)
 
 ```sh
 EXPBOT_BOT_TOKEN=your_token docker compose up -d
 ```
 
 The database is persisted in the `exp-tg-bot-data` Docker volume.
+
+The image is available on Docker Hub: [alex3iii/exp-tg-bot](https://hub.docker.com/r/alex3iii/exp-tg-bot)
 
 ## Development
 
