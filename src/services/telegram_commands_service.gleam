@@ -34,6 +34,10 @@ const help = "Usage:
   e.g. 'food 12.50 USD credit card'
 - To get a report: /report [last]
   e.g. '/report' for this month, '/report last' for last month
+
+
+This is an open-source project.
+https://github.com/AlexIII/exp-tg-bot
 "
 
 fn handle_message(ctx: Context, from_id: Int, text: String) -> Option(String) {
