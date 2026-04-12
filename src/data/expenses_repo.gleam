@@ -2,8 +2,9 @@ import app_error.{type AppError, DbError}
 import birl.{type Time}
 import expenses_tg_bot/sql
 import gleam/dynamic/decode
+import gleam/int
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option.{type Option, Some}
 import gleam/result
 import sqlight
 import utils/parrot
@@ -16,6 +17,7 @@ pub type AddExpense {
     amount_usd: Float,
     category: Option(String),
     source: Option(String),
+    message_id: Int,
   )
 }
 
@@ -36,6 +38,7 @@ pub type ExpensesRepo {
     add_expense: fn(AddExpense) -> Result(Nil, AppError),
     get_expenses_for_user_by_category: GetExpensesByGroup,
     get_expenses_for_user_by_source: GetExpensesByGroup,
+    delete_expense_by_user_and_message_id: fn(Int, Int) -> Result(Nil, AppError),
   )
 }
 
@@ -49,6 +52,9 @@ pub fn new(ctx: Context) -> ExpensesRepo {
     get_expenses_for_user_by_source: fn(user_tg_id, date_from, date_to) {
       get_expenses_for_user_by_source(ctx, user_tg_id, date_from, date_to)
     },
+    delete_expense_by_user_and_message_id: fn(user_tg_id, message_id) {
+      delete_expense_by_user_and_message_id(ctx, user_tg_id, message_id)
+    },
   )
 }
 
@@ -61,6 +67,7 @@ fn add_expense(ctx: Context, expense: AddExpense) -> Result(Nil, AppError) {
       expense.amount_usd,
       expense.category,
       expense.source,
+      option.Some(int.to_string(expense.message_id)),
     )
   let with = list.map(with, parrot.to_sqlight)
 
@@ -130,5 +137,30 @@ fn get_expenses_for_user_by_source(
       "Error executing query in get_expenses_for_user_by_source(): "
       <> e.message,
     )
+  })
+}
+
+fn delete_expense_by_user_and_message_id(
+  ctx: Context,
+  user_tg_id: Int,
+  message_id: Int,
+) -> Result(Nil, AppError) {
+  let #(sql, with) =
+    sql.delete_expense_by_user_and_message_id(
+      user_tg_id,
+      Some(int.to_string(message_id)),
+    )
+  let with = list.map(with, parrot.to_sqlight)
+
+  sqlight.query(sql, on: ctx.conn, with:, expecting: decode.success(""))
+  |> result.map_error(fn(e) {
+    DbError(
+      "Error executing query in delete_expense_by_user_and_message_id(): "
+      <> e.message,
+    )
+  })
+  |> result.map(fn(res) {
+    echo res
+    Nil
   })
 }

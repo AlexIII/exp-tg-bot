@@ -12,12 +12,13 @@ pub fn create_expense(
   amount_usd amount_usd: Float,
   category category: Option(String),
   source source: Option(String),
+  message_id message_id: Option(String),
 ) {
   let sql =
     "insert into
-  expenses (user_tg_id, amount, currency, amount_usd, category, source)
+  expenses (user_tg_id, amount, currency, amount_usd, category, source, message_id)
 values
-  (?, ?, ?, ?, ?, ?)"
+  (?, ?, ?, ?, ?, ?, ?)"
   #(sql, [
     dev.ParamInt(user_tg_id),
     dev.ParamFloat(amount),
@@ -25,6 +26,18 @@ values
     dev.ParamFloat(amount_usd),
     dev.ParamNullable(option.map(category, fn(v) { dev.ParamString(v) })),
     dev.ParamNullable(option.map(source, fn(v) { dev.ParamString(v) })),
+    dev.ParamNullable(option.map(message_id, fn(v) { dev.ParamString(v) })),
+  ])
+}
+
+pub fn delete_expense_by_user_and_message_id(
+  user_tg_id user_tg_id: Int,
+  message_id message_id: Option(String),
+) {
+  let sql = "delete from expenses where user_tg_id = ? AND message_id = ?"
+  #(sql, [
+    dev.ParamInt(user_tg_id),
+    dev.ParamNullable(option.map(message_id, fn(v) { dev.ParamString(v) })),
   ])
 }
 

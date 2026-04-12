@@ -1,9 +1,10 @@
 import app_error.{InvalidMessageFormat}
 import gleam/option.{None, Some}
+import gleeunit
 import services/action_service.{Expense}
 
-pub fn main() -> Nil {
-  Nil
+pub fn main() {
+  gleeunit.main()
 }
 
 pub fn parse_full_message_test() {

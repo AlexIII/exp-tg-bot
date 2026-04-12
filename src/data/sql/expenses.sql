@@ -1,8 +1,14 @@
 -- name: CreateExpense :exec
 insert into
-  expenses (user_tg_id, amount, currency, amount_usd, category, source)
+  expenses (user_tg_id, amount, currency, amount_usd, category, source, message_id)
 values
-  (?, ?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?, ?);
+
+-- name: DeleteExpenseByUserAndMessageId :exec
+delete from
+  expenses
+where
+  user_tg_id = ? AND message_id = ?;
 
 -- name: GetExpensesForUserByCategory :many
 select category, SUM(amount_usd) as total_usd from expenses

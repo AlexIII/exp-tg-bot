@@ -1,7 +1,7 @@
 FROM debian:bookworm AS builder
 
 RUN apt update \
-    && apt install -y --no-install-recommends curl wget ca-certificates build-essential \
+    && apt install -y --no-install-recommends curl wget ca-certificates build-essential git \
     && mkdir -p /etc/apt/keyrings \
     && wget -qO- https://binaries2.erlang-solutions.com/GPG-KEY-pmanager.asc | tee /etc/apt/keyrings/erlang.asc \
     && echo "deb [signed-by=/etc/apt/keyrings/erlang.asc] https://binaries2.erlang-solutions.com/debian bookworm-esl-erlang-27 contrib" | tee /etc/apt/sources.list.d/erlang.list \
@@ -43,10 +43,10 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/build/erlang-shipment /app
-ADD ./init_sqlite_db.sh ./schema.sql /app/
+ADD ./migrations /app/migrations
 
-RUN chmod +x /app/entrypoint.sh /app/init_sqlite_db.sh
+RUN chmod +x /app/entrypoint.sh
 
 WORKDIR /app
 
-CMD ["/bin/sh", "-c", "/app/init_sqlite_db.sh && /app/entrypoint.sh run"]
+CMD ["/bin/sh", "-c", "/app/entrypoint.sh run"]

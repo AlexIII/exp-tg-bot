@@ -1,7 +1,11 @@
+import common_sql_sqlite
 import data/expenses_repo
 import gleam/httpc
 import gleam/option.{Some}
-import logging.{Info}
+import gleam/result
+import gleam/string
+import gorrion
+import logging
 import services/action_service
 import services/configuration_service
 import services/currency_service
@@ -18,6 +22,8 @@ pub fn main() {
 
   use conn <- sqlight.with_connection(app_config.db_file_path)
 
+  run_db_migrations(conn)
+
   let cmd_service = build_commands_service(conn)
 
   let shutdown =
@@ -28,10 +34,26 @@ pub fn main() {
       handle_command: cmd_service.get_command_handlers(),
     ))
 
-  logging.log(Info, "Starting bot... Press Ctrl+C to stop.")
+  logging.log(logging.Info, "Starting bot... Press Ctrl+C to stop.")
   system.wait_for_shutdown_signal()
-  logging.log(Info, "Shutting down bot...")
-  shutdown()
+  logging.log(logging.Info, "Shutting down bot...")
+  Ok(shutdown())
+}
+
+fn run_db_migrations(conn: sqlight.Connection) {
+  let driver = common_sql_sqlite.driver()
+
+  let assert Ok(_) =
+    gorrion.migrate(driver:, conn:, migrations_dir: "migrations")
+    |> result.map_error(fn(err) {
+      logging.log(
+        logging.Error,
+        "Failed to run migrations: " <> string.inspect(err),
+      )
+      err
+    })
+
+  Nil
 }
 
 fn build_commands_service(conn: sqlight.Connection) {

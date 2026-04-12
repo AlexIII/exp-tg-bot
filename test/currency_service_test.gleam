@@ -2,10 +2,6 @@ import app_error.{ApiError, InvalidCurrency}
 import gleam/http/response
 import services/currency_service
 
-pub fn main() -> Nil {
-  Nil
-}
-
 pub fn get_rate_success_test() {
   let service =
     currency_service.new(

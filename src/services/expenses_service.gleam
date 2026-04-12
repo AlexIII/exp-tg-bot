@@ -7,6 +7,7 @@ import gleam/result
 import gleam/string
 import services/action_service.{type ActionService}
 import services/currency_service.{type CurrencyService}
+import services/types.{type MessageAttrs}
 
 pub type Context {
   Context(
@@ -43,28 +44,32 @@ pub type ExpensesReport {
 pub type ExpensesService {
   ExpensesService(
     ctx: Context,
-    process_user_message: fn(Int, String) -> Result(Nil, AppError),
+    process_user_message: fn(String, MessageAttrs) -> Result(Nil, AppError),
     get_report_for_user: fn(Int, ReportGrouping, ReportPeriod) ->
       Result(ExpensesReport, AppError),
+    delete_expense_by_user_and_message_id: fn(Int, Int) -> Result(Nil, AppError),
   )
 }
 
 pub fn new(ctx: Context) -> ExpensesService {
   ExpensesService(
     ctx:,
-    process_user_message: fn(user_tg_id, message) {
-      process_user_message(ctx, user_tg_id, message)
+    process_user_message: fn(message, attrs) {
+      process_user_message(ctx, message, attrs)
     },
     get_report_for_user: fn(user_tg_id, by, period) {
       get_report_for_user(ctx, user_tg_id, by, period)
+    },
+    delete_expense_by_user_and_message_id: fn(user_tg_id, message_id) {
+      delete_expense_by_user_and_message_id(ctx, user_tg_id, message_id)
     },
   )
 }
 
 fn process_user_message(
   ctx: Context,
-  user_tg_id: Int,
   message: String,
+  attrs: MessageAttrs,
 ) -> Result(Nil, AppError) {
   ctx.action_service.parse(message)
   |> result.try(fn(action) {
@@ -74,12 +79,13 @@ fn process_user_message(
         |> result.try(fn(rate) {
           let amount_usd = amount *. rate
           ctx.expenses_repo.add_expense(expenses_repo.AddExpense(
-            user_tg_id:,
+            user_tg_id: attrs.from_id,
             amount:,
             currency:,
             amount_usd:,
             category:,
             source:,
+            message_id: attrs.id,
           ))
         })
       }
@@ -192,4 +198,15 @@ pub fn report_to_text(report: ExpensesReport) -> String {
     "" -> ""
     _ -> "\n\n" <> "Group ..... USD\n" <> "-----------------------\n" <> rows
   }
+}
+
+fn delete_expense_by_user_and_message_id(
+  ctx: Context,
+  user_tg_id: Int,
+  message_id: Int,
+) -> Result(Nil, AppError) {
+  ctx.expenses_repo.delete_expense_by_user_and_message_id(
+    user_tg_id,
+    message_id,
+  )
 }

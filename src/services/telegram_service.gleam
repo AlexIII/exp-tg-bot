@@ -6,6 +6,7 @@ import gleam/option.{type Option}
 import gleam/result
 import gleam/string
 import logging.{Info}
+import services/types.{type MessageAttrs, MessageAttrs}
 import telega
 import telega/bot
 import telega/client as telega_httpc
@@ -13,6 +14,7 @@ import telega/error as telega_error
 import telega/reply
 import telega/router
 import telega/update
+import utils/utils.{has}
 
 pub type Command =
   update.Command
@@ -21,8 +23,10 @@ pub type Config {
   Config(
     bot_token: String,
     enable_logs: Bool,
-    handle_text: Option(fn(Int, String) -> Option(String)),
-    handle_command: List(#(String, fn(Int, Command) -> Option(String))),
+    /// message -> response text
+    handle_text: Option(fn(String, MessageAttrs) -> Option(String)),
+    /// command -> response text
+    handle_command: List(#(String, fn(Command, MessageAttrs) -> Option(String))),
   )
 }
 
@@ -42,7 +46,10 @@ pub fn run(config: Config) -> fn() -> Nil {
         fn(r) {
           use ctx, text <- router.on_any_text(r)
           {
-            use resp <- option.map(handle_text(ctx.update.from_id, text))
+            use resp <- option.map(handle_text(
+              text,
+              map_telega_update_to_message_attrs(ctx.update),
+            ))
             send_reply(ctx, resp)
           }
           Ok(ctx)
@@ -55,7 +62,10 @@ pub fn run(config: Config) -> fn() -> Nil {
         let #(cmd_name, handler) = cmd
         use ctx, cmd <- router.on_command(r, cmd_name)
         {
-          use resp <- option.map(handler(ctx.update.from_id, cmd))
+          use resp <- option.map(handler(
+            cmd,
+            map_telega_update_to_message_attrs(ctx.update),
+          ))
           send_reply(ctx, resp)
         }
         Ok(ctx)
@@ -76,14 +86,22 @@ pub fn run(config: Config) -> fn() -> Nil {
   fn() { telega.shutdown(bot) }
 }
 
+fn map_telega_update_to_message_attrs(update: update.Update) -> MessageAttrs {
+  case update {
+    update.TextUpdate(message: msg, from_id:, ..)
+    | update.CommandUpdate(message: msg, from_id:, ..) ->
+      MessageAttrs(
+        id: msg.message_id,
+        from_id: from_id,
+        reply_to_message_id: msg.reply_to_message
+          |> option.map(fn(reply) { reply.message_id }),
+      )
+    _ -> panic as "Unexpected update type"
+  }
+}
+
 fn send_reply(ctx: bot.Context(a, b), text: String) {
   use send_error <- result.map_error(reply.with_text(ctx, text))
   logging.log(Info, "Failed to send reply: " <> string.inspect(send_error))
-  send_error
-}
-
-fn has(option: Option(a), on_value: fn(a) -> b, on_none: fn() -> b) -> b {
-  option
-  |> option.map(on_value)
-  |> option.lazy_unwrap(on_none)
+  Nil
 }

@@ -10,6 +10,7 @@ Try it here: [@a_track_expenses_bot](https://t.me/a_track_expenses_bot)
 - **Log expenses** by sending a message: `[category] amount CURRENCY [source]`
   - e.g. `food 12.50 USD credit card` or just `50 EUR`
   - Amounts are automatically converted to USD via the [Frankfurter](https://api.frankfurter.dev) API
+  - Delete expenses by replying to the expense message with `/del`
 - **Monthly reports** - `/report` for the current month, `/report last` for the previous month
   - Grouped by category and source with USD totals
 - **Multi-user** - expenses are scoped per Telegram user ID
